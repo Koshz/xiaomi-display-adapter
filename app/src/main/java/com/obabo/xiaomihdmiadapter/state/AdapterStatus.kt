@@ -3,6 +3,7 @@ package com.obabo.xiaomihdmiadapter.state
 sealed interface AdapterStatus {
     data object Off : AdapterStatus
     data object MissingHdmi : AdapterStatus
+    data object PreparingLandscape : AdapterStatus
     data object NeedsCapturePermission : AdapterStatus
     data object Starting : AdapterStatus
 

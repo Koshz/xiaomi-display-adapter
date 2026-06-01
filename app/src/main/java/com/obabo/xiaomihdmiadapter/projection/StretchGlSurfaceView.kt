@@ -77,6 +77,10 @@ private class StretchRenderer(
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         try {
+            if (!CaptureSpecProvider.isLandscape(captureSpec)) {
+                surfaceListener.onRendererError(CaptureSpecProvider.LANDSCAPE_REQUIRED_MESSAGE)
+                return
+            }
             Matrix.setIdentityM(texMatrix, 0)
             program = createProgram(VERTEX_SHADER, FRAGMENT_SHADER)
             positionHandle = GLES20.glGetAttribLocation(program, "aPosition")

@@ -24,6 +24,16 @@ class AdapterStateReducerTest {
     }
 
     @Test
+    fun preparingLandscapeMovesToPreparingLandscape() {
+        val next = AdapterStateReducer.reduce(
+            AdapterStatus.Off,
+            ControllerEvent.PreparingLandscape
+        )
+
+        assertEquals(AdapterStatus.PreparingLandscape, next)
+    }
+
+    @Test
     fun stopMovesToOff() {
         val next = AdapterStateReducer.reduce(
             AdapterStatus.On("HDMI", 1920, 1080),

@@ -13,6 +13,8 @@ data class CaptureSpec(
 )
 
 object CaptureSpecProvider {
+    const val LANDSCAPE_REQUIRED_MESSAGE = "Rotate phone to landscape and try again"
+
     fun current(context: Context): CaptureSpec {
         val metrics = context.resources.displayMetrics
         val bounds = currentBounds(context, metrics)
@@ -21,6 +23,14 @@ object CaptureSpecProvider {
             height = bounds.height().coerceAtLeast(1),
             densityDpi = metrics.densityDpi.takeIf { it > 0 } ?: DisplayMetrics.DENSITY_DEFAULT
         )
+    }
+
+    fun currentLandscape(context: Context): CaptureSpec? {
+        return current(context).takeIf(::isLandscape)
+    }
+
+    fun isLandscape(captureSpec: CaptureSpec): Boolean {
+        return captureSpec.width > captureSpec.height
     }
 
     @Suppress("DEPRECATION")

@@ -45,7 +45,10 @@ fun AdapterScreen(
     displayInfo: ExternalDisplayInfo?,
     onPowerClick: () -> Unit
 ) {
-    val isOn = status is AdapterStatus.On || status is AdapterStatus.Starting
+    val isOn = status is AdapterStatus.On ||
+        status is AdapterStatus.Starting ||
+        status is AdapterStatus.PreparingLandscape ||
+        status is AdapterStatus.NeedsCapturePermission
     val buttonColor by animateColorAsState(
         targetValue = when {
             status is AdapterStatus.Error -> Color(0xFFE85D75)
@@ -72,7 +75,8 @@ fun AdapterScreen(
                 PowerButton(
                     color = buttonColor,
                     isOn = isOn,
-                    enabled = status !is AdapterStatus.NeedsCapturePermission,
+                    enabled = status !is AdapterStatus.PreparingLandscape &&
+                        status !is AdapterStatus.NeedsCapturePermission,
                     onClick = onPowerClick
                 )
                 Spacer(modifier = Modifier.height(28.dp))
@@ -164,6 +168,7 @@ private fun StatusText(status: AdapterStatus) {
     val text = when (status) {
         AdapterStatus.Off -> "OFF"
         AdapterStatus.MissingHdmi -> "HDMI NOT FOUND"
+        AdapterStatus.PreparingLandscape -> "ROTATING"
         AdapterStatus.NeedsCapturePermission -> "WAITING FOR ANDROID"
         AdapterStatus.Starting -> "STARTING"
         is AdapterStatus.On -> "ON"
@@ -229,6 +234,7 @@ private fun AdapterStatus.modeValue(): String {
     return when (this) {
         AdapterStatus.Off -> "Idle"
         AdapterStatus.MissingHdmi -> "Waiting for HDMI"
+        AdapterStatus.PreparingLandscape -> "Preparing landscape"
         AdapterStatus.NeedsCapturePermission -> "Capture consent"
         AdapterStatus.Starting -> "Opening HDMI"
         is AdapterStatus.On -> "${captureWidth} x ${captureHeight} stretch"

@@ -132,14 +132,20 @@ class MediaProjectionService : Service(), InputSurfaceListener {
         AdapterStateStore.update(AdapterStatus.Starting)
 
         rotationController.tryLockLandscape()
-        captureSpec = CaptureSpecProvider.current(this)
+        val landscapeCaptureSpec = intent.captureSpecFromExtras()
+            ?: CaptureSpecProvider.currentLandscape(this)
+        if (landscapeCaptureSpec == null) {
+            failAndStop(CaptureSpecProvider.LANDSCAPE_REQUIRED_MESSAGE)
+            return
+        }
+        captureSpec = landscapeCaptureSpec
 
         val manager = getSystemService(MediaProjectionManager::class.java)
         projection = manager.getMediaProjection(resultCode, resultData).also {
             it.registerCallback(projectionCallback, mainHandler)
         }
 
-        showPresentation(display, captureSpec ?: CaptureSpecProvider.current(this))
+        showPresentation(display, landscapeCaptureSpec)
     }
 
     private fun showPresentation(display: Display, captureSpec: CaptureSpec) {
@@ -280,14 +286,25 @@ class MediaProjectionService : Service(), InputSurfaceListener {
         private const val ACTION_STOP = "com.obabo.xiaomihdmiadapter.action.STOP"
         private const val EXTRA_RESULT_CODE = "result_code"
         private const val EXTRA_RESULT_DATA = "result_data"
+        private const val EXTRA_CAPTURE_WIDTH = "capture_width"
+        private const val EXTRA_CAPTURE_HEIGHT = "capture_height"
+        private const val EXTRA_CAPTURE_DENSITY_DPI = "capture_density_dpi"
         private const val CHANNEL_ID = "hdmi_adapter"
         private const val NOTIFICATION_ID = 1001
 
-        fun start(context: Context, resultCode: Int, resultData: Intent) {
+        fun start(
+            context: Context,
+            resultCode: Int,
+            resultData: Intent,
+            captureSpec: CaptureSpec
+        ) {
             val intent = Intent(context, MediaProjectionService::class.java)
                 .setAction(ACTION_START)
                 .putExtra(EXTRA_RESULT_CODE, resultCode)
                 .putExtra(EXTRA_RESULT_DATA, resultData)
+                .putExtra(EXTRA_CAPTURE_WIDTH, captureSpec.width)
+                .putExtra(EXTRA_CAPTURE_HEIGHT, captureSpec.height)
+                .putExtra(EXTRA_CAPTURE_DENSITY_DPI, captureSpec.densityDpi)
             ContextCompat.startForegroundService(context, intent)
         }
 
@@ -296,5 +313,18 @@ class MediaProjectionService : Service(), InputSurfaceListener {
                 .setAction(ACTION_STOP)
             context.startService(intent)
         }
+    }
+
+    private fun Intent.captureSpecFromExtras(): CaptureSpec? {
+        val width = getIntExtra(EXTRA_CAPTURE_WIDTH, 0)
+        val height = getIntExtra(EXTRA_CAPTURE_HEIGHT, 0)
+        val densityDpi = getIntExtra(EXTRA_CAPTURE_DENSITY_DPI, 0)
+        if (width <= 0 || height <= 0 || densityDpi <= 0) return null
+
+        return CaptureSpec(
+            width = width,
+            height = height,
+            densityDpi = densityDpi
+        ).takeIf(CaptureSpecProvider::isLandscape)
     }
 }
