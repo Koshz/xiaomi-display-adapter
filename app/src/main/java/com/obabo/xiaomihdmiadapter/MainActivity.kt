@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.res.Configuration
 import android.graphics.Rect
+import android.media.projection.MediaProjectionConfig
 import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Bundle
@@ -114,7 +115,7 @@ class MainActivity : ComponentActivity() {
                             status = status,
                             displayInfo = displayInfo,
                             onRequestCapture = {
-                                captureLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
+                                captureLauncher.launch(createFullDisplayCaptureIntent())
                             }
                         )
                     }
@@ -213,6 +214,14 @@ class MainActivity : ComponentActivity() {
             this is AdapterStatus.NeedsCapturePermission ||
             this is AdapterStatus.Starting ||
             this is AdapterStatus.On
+    }
+
+    private fun createFullDisplayCaptureIntent() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+        mediaProjectionManager.createScreenCaptureIntent(
+            MediaProjectionConfig.createConfigForDefaultDisplay()
+        )
+    } else {
+        mediaProjectionManager.createScreenCaptureIntent()
     }
 
     companion object {

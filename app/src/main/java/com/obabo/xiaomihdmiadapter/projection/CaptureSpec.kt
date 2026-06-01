@@ -37,7 +37,7 @@ object CaptureSpecProvider {
     private fun currentBounds(context: Context, metrics: DisplayMetrics): Rect {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             val windowManager = context.getSystemService(WindowManager::class.java)
-            windowManager.currentWindowMetrics.bounds
+            windowManager.maximumWindowMetrics.bounds
         } else {
             val windowManager = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
             windowManager.defaultDisplay.getRealMetrics(metrics)
