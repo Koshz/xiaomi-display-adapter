@@ -236,10 +236,10 @@ private class StretchRenderer(
         private const val STRIDE_BYTES = 4 * FLOAT_BYTES
 
         private val VERTICES = floatArrayOf(
-            -1f, -1f, 0f, 1f,
-            1f, -1f, 1f, 1f,
-            -1f, 1f, 0f, 0f,
-            1f, 1f, 1f, 0f
+            -1f, -1f, 0f, 0f,
+            1f, -1f, 1f, 0f,
+            -1f, 1f, 0f, 1f,
+            1f, 1f, 1f, 1f
         )
 
         private const val VERTEX_SHADER = """
