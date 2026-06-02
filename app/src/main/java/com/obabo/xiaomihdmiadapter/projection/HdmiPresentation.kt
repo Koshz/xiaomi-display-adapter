@@ -4,7 +4,6 @@ import android.app.Presentation
 import android.content.Context
 import android.os.Bundle
 import android.view.Display
-import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import com.obabo.xiaomihdmiadapter.R
@@ -21,13 +20,6 @@ class HdmiPresentation(
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         requestWindowFeature(Window.FEATURE_NO_TITLE)
-        window?.decorView?.systemUiVisibility =
-            View.SYSTEM_UI_FLAG_FULLSCREEN or
-                View.SYSTEM_UI_FLAG_HIDE_NAVIGATION or
-                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or
-                View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN or
-                View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION or
-                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
 
         val rendererView = StretchGlSurfaceView(context, captureSpec, surfaceListener)
         glSurfaceView = rendererView

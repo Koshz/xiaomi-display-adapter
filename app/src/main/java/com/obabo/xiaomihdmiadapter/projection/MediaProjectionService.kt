@@ -36,12 +36,20 @@ class MediaProjectionService : Service(), InputSurfaceListener {
     private var presentation: HdmiPresentation? = null
     private var activeDisplayId: Int? = null
     private var captureSpec: CaptureSpec? = null
+    private var actualCaptureWidth: Int? = null
+    private var actualCaptureHeight: Int? = null
     private lateinit var rotationController: RotationController
 
     private val projectionCallback = object : MediaProjection.Callback() {
         override fun onStop() {
             mainHandler.post {
                 stopAdapter(updateState = true, stopProjection = false)
+            }
+        }
+
+        override fun onCapturedContentResize(width: Int, height: Int) {
+            mainHandler.post {
+                handleCapturedContentResize(width, height)
             }
         }
     }
@@ -158,7 +166,7 @@ class MediaProjectionService : Service(), InputSurfaceListener {
                 surfaceListener = this
             ).also { it.show() }
         } catch (throwable: Throwable) {
-            failAndStop("Could not open fullscreen HDMI presentation")
+            failAndStop("Could not open HDMI presentation")
         }
     }
 
@@ -185,11 +193,31 @@ class MediaProjectionService : Service(), InputSurfaceListener {
             },
             mainHandler
         )
+        updateOnState()
+    }
+
+    private fun handleCapturedContentResize(width: Int, height: Int) {
+        val expected = captureSpec ?: return
+        actualCaptureWidth = width
+        actualCaptureHeight = height
+
+        if (CaptureContentValidator.isSuspiciouslySmaller(expected, width, height)) {
+            failAndStop(CaptureContentValidator.FULL_DISPLAY_REQUIRED_MESSAGE)
+            return
+        }
+
+        updateOnState()
+    }
+
+    private fun updateOnState() {
+        val expected = captureSpec ?: return
         AdapterStateStore.update(
             AdapterStatus.On(
                 displayName = presentation?.display?.name ?: "HDMI display",
-                captureWidth = captureSpec.width,
-                captureHeight = captureSpec.height
+                expectedCaptureWidth = expected.width,
+                expectedCaptureHeight = expected.height,
+                actualCaptureWidth = actualCaptureWidth,
+                actualCaptureHeight = actualCaptureHeight
             )
         )
     }
@@ -219,6 +247,8 @@ class MediaProjectionService : Service(), InputSurfaceListener {
         presentation = null
         activeDisplayId = null
         captureSpec = null
+        actualCaptureWidth = null
+        actualCaptureHeight = null
 
         if (stopProjection) {
             projection?.let {

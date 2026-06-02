@@ -4,6 +4,7 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Test
 import com.obabo.xiaomihdmiadapter.projection.CaptureSpec
+import com.obabo.xiaomihdmiadapter.projection.CaptureContentValidator
 import com.obabo.xiaomihdmiadapter.projection.CaptureSpecProvider
 
 class ScreenTransformTest {
@@ -33,5 +34,33 @@ class ScreenTransformTest {
         val captureSpec = CaptureSpec(width = 1440, height = 3200, densityDpi = 560)
 
         assertEquals(false, CaptureSpecProvider.isLandscape(captureSpec))
+    }
+
+    @Test
+    fun suspiciousCapturedContentIsFlaggedWhenSmallerThanExpected() {
+        val expected = CaptureSpec(width = 3200, height = 1440, densityDpi = 560)
+
+        assertEquals(
+            true,
+            CaptureContentValidator.isSuspiciouslySmaller(
+                expected = expected,
+                actualWidth = 2400,
+                actualHeight = 1080
+            )
+        )
+    }
+
+    @Test
+    fun fullDisplayCapturedContentIsAccepted() {
+        val expected = CaptureSpec(width = 3200, height = 1440, densityDpi = 560)
+
+        assertEquals(
+            false,
+            CaptureContentValidator.isSuspiciouslySmaller(
+                expected = expected,
+                actualWidth = 3200,
+                actualHeight = 1440
+            )
+        )
     }
 }

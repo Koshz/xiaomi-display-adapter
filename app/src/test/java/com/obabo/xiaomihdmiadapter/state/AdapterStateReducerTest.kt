@@ -36,10 +36,26 @@ class AdapterStateReducerTest {
     @Test
     fun stopMovesToOff() {
         val next = AdapterStateReducer.reduce(
-            AdapterStatus.On("HDMI", 1920, 1080),
+            AdapterStatus.On("HDMI", 1920, 1080, 1920, 1080),
             ControllerEvent.Stopped
         )
 
         assertEquals(AdapterStatus.Off, next)
+    }
+
+    @Test
+    fun onStatusExposesExpectedAndActualCaptureDimensions() {
+        val status = AdapterStatus.On(
+            displayName = "HDMI",
+            expectedCaptureWidth = 3200,
+            expectedCaptureHeight = 1440,
+            actualCaptureWidth = 3200,
+            actualCaptureHeight = 1440
+        )
+
+        assertEquals(3200, status.expectedCaptureWidth)
+        assertEquals(1440, status.expectedCaptureHeight)
+        assertEquals(3200, status.actualCaptureWidth)
+        assertEquals(1440, status.actualCaptureHeight)
     }
 }

@@ -9,8 +9,10 @@ sealed interface AdapterStatus {
 
     data class On(
         val displayName: String,
-        val captureWidth: Int,
-        val captureHeight: Int
+        val expectedCaptureWidth: Int,
+        val expectedCaptureHeight: Int,
+        val actualCaptureWidth: Int? = null,
+        val actualCaptureHeight: Int? = null
     ) : AdapterStatus
 
     data class Error(

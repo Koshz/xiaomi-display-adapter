@@ -233,7 +233,8 @@ private fun ConnectionPanel(
             SectionTitle("Signal")
             MetricRow("HDMI", displayInfo?.name ?: "Disconnected", displayInfo != null)
             MetricRow("Output", displayInfo?.resolutionText() ?: "No display", displayInfo != null)
-            MetricRow("Capture", status.captureText(), status is AdapterStatus.On)
+            MetricRow("Expected", status.expectedCaptureText(), status is AdapterStatus.On)
+            MetricRow("Captured", status.actualCaptureText(), status is AdapterStatus.On)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -459,14 +460,28 @@ private fun AdapterStatus.detail(): String {
         AdapterStatus.PreparingLandscape -> "Waiting for Android to rotate the source."
         AdapterStatus.NeedsCapturePermission -> "Confirm screen capture in the system dialog."
         AdapterStatus.Starting -> "Creating the HDMI presentation."
-        is AdapterStatus.On -> "Rendering ${captureWidth} x ${captureHeight} to HDMI."
+        is AdapterStatus.On -> "Rendering ${actualCaptureText()} to HDMI."
         is AdapterStatus.Error -> "Fix the issue and start again."
     }
 }
 
-private fun AdapterStatus.captureText(): String {
+private fun AdapterStatus.expectedCaptureText(): String {
     return when (this) {
-        is AdapterStatus.On -> "$captureWidth x $captureHeight"
+        is AdapterStatus.On -> "$expectedCaptureWidth x $expectedCaptureHeight"
+        AdapterStatus.PreparingLandscape -> "Waiting"
+        AdapterStatus.NeedsCapturePermission -> "Pending"
+        AdapterStatus.Starting -> "Starting"
+        else -> "Inactive"
+    }
+}
+
+private fun AdapterStatus.actualCaptureText(): String {
+    return when (this) {
+        is AdapterStatus.On -> if (actualCaptureWidth != null && actualCaptureHeight != null) {
+            "$actualCaptureWidth x $actualCaptureHeight"
+        } else {
+            "Waiting"
+        }
         AdapterStatus.PreparingLandscape -> "Waiting"
         AdapterStatus.NeedsCapturePermission -> "Pending"
         AdapterStatus.Starting -> "Starting"
